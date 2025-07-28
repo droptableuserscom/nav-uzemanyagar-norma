@@ -1,0 +1,23 @@
+{
+  "name": "nav-uzemanyagar-norma",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.17.1",
+    "@hono/zod-openapi": "^1.0.2",
+    "@hono/zod-validator": "^0.7.2",
+    "axios": "^1.11.0",
+    "axios-retry": "^4.5.0",
+    "hono": "^4.8.9",
+    "zod": "^4.0.10"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.17",
+    "tsx": "^4.7.1",
+    "typescript": "^5.8.3"
+  }
+}
