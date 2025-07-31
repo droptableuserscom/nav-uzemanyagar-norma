@@ -2,10 +2,8 @@ import { getHtml } from "src/client/scraper.client";
 import * as cheerio from "cheerio";
 import { FuelPrice, fuelPriceSchema, monthNameSchema } from "./scraper.schema";
 import PersistanceService from "../persistance/persistance.service";
-import {
-  UpdateYearPrices,
-  updateYearPricesSchema,
-} from "src/persistance/persistance.schema";
+import { updateYearPricesSchema } from "src/persistance/persistance.schema";
+import { ScraperError } from "./scraper.error";
 
 namespace ScraperService {
   export const runScraper = async () => {
@@ -17,30 +15,56 @@ namespace ScraperService {
     const rows = table.find("tr").toArray();
 
     for (let i = 1; i < rows.length; i++) {
-      const element = rows[i];
-      const row = page2(element);
-      const cells = row.find("td");
+      try {
+        const element = rows[i];
+        const row = page2(element);
+        const cells = row.find("td");
 
-      const monthName = page2(cells.eq(0)).text().trim().toLowerCase();
-      const month = monthNameSchema.parse(monthName);
-      const rowData: FuelPrice = {
-        olmozatlanMotorbenzin: parseFloat(page2(cells.eq(1)).text()) || 0,
-        gazolaj: parseFloat(page2(cells.eq(2)).text()) || 0,
-        keverek: parseFloat(page2(cells.eq(3)).text()) || 0,
-        lpg: parseFloat(page2(cells.eq(4)).text()) || 0,
-        cng: parseFloat(page2(cells.eq(5)).text()) || 0,
-      };
-      const fuelValidation = fuelPriceSchema.safeParse(rowData);
-      if (!fuelValidation.success) {
-        console.log("fuelValidation", fuelValidation.error);
-        throw new Error("Failed to parse data");
+        const monthName = page2(cells.eq(0)).text().trim().toLowerCase();
+        const month = monthNameSchema.safeParse(monthName);
+        if (!month.success) {
+          throw new ScraperError(
+            `Failed to parse month name: ${monthName} in row ${i}`,
+            "partial"
+          );
+        }
+        const rowData: FuelPrice = {
+          olmozatlanMotorbenzin: parseFloat(page2(cells.eq(1)).text()) || 0,
+          gazolaj: parseFloat(page2(cells.eq(2)).text()) || 0,
+          keverek: parseFloat(page2(cells.eq(3)).text()) || 0,
+          lpg: parseFloat(page2(cells.eq(4)).text()) || 0,
+          cng: parseFloat(page2(cells.eq(5)).text()) || 0,
+        };
+        const fuelValidation = fuelPriceSchema.safeParse(rowData);
+        if (!fuelValidation.success) {
+          throw new ScraperError(
+            `Failed to parse fuel price: ${JSON.stringify(
+              rowData
+            )} in row ${i}`,
+            "breaking"
+          );
+        }
+        const updateYearPrices = updateYearPricesSchema.safeParse({
+          year: 2025,
+          month: month.data,
+          prices: fuelValidation.data,
+        });
+        if (!updateYearPrices.success) {
+          throw new ScraperError(
+            `Failed to parse update year prices: ${updateYearPrices.error.message} in row ${i}`,
+            "breaking"
+          );
+        }
+
+        await PersistanceService.addMonth(updateYearPrices.data);
+      } catch (error) {
+        if (error instanceof ScraperError) {
+          if (error.type === "breaking") {
+            throw error;
+          }
+          console.error(error.message);
+        }
       }
-      const updateYearPrices: UpdateYearPrices = updateYearPricesSchema.parse({
-        year: "2025",
-        month,
-        prices: fuelValidation.data,
-      });
-      await PersistanceService.addMonth(updateYearPrices);
     }
   };
 

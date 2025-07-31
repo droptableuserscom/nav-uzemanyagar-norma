@@ -36,7 +36,7 @@ export const monthNames = [
 
 export const monthNameSchema = z
   .string()
-  .refine((val) => monthNames.includes(val as any), {
+  .refine((val) => monthNames.includes(val as (typeof monthNames)[number]), {
     message: "Invalid month name",
   });
 
