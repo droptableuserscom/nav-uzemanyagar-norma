@@ -1,14 +1,7 @@
 import { getHtml } from "src/client/scraper.client";
 import * as cheerio from "cheerio";
-import * as fs from "fs";
-import * as path from "path";
-import {
-  FuelPrice,
-  fuelPriceSchema,
-  Month,
-  monthsSchema,
-  yearPricesSchema,
-} from "./scraper.schema";
+import { FuelPrice, fuelPriceSchema, monthNameSchema } from "./scraper.schema";
+import PersistanceService from "../persistance/persistance.service";
 
 namespace ScraperService {
   export const runScraper = async () => {
@@ -16,16 +9,16 @@ namespace ScraperService {
     const html2 = await getHtml(linksMap.get("2025")!);
     const page2 = cheerio.load(html2);
     const table = page2("tbody");
-    const allMonthsData: Month[] = [];
-    table.find("tr").each((i, element) => {
-      if (i === 0) {
-        return;
-      }
 
+    const rows = table.find("tr").toArray();
+
+    for (let i = 1; i < rows.length; i++) {
+      const element = rows[i];
       const row = page2(element);
       const cells = row.find("td");
 
       const monthName = page2(cells.eq(0)).text().trim().toLowerCase();
+      const month = monthNameSchema.parse(monthName);
       const rowData: FuelPrice = {
         olmozatlanMotorbenzin: parseFloat(page2(cells.eq(1)).text()) || 0,
         gazolaj: parseFloat(page2(cells.eq(2)).text()) || 0,
@@ -38,22 +31,11 @@ namespace ScraperService {
         console.log("fuelValidation", fuelValidation.error);
         throw new Error("Failed to parse data");
       }
-      const monthsValidation = monthsSchema.safeParse({
-        [monthName]: fuelValidation.data,
+      await PersistanceService.addMonth({
+        year: "2025",
+        month,
+        prices: fuelValidation.data,
       });
-      if (!monthsValidation.success) {
-        console.log("monthsValidation", monthsValidation.error);
-      }
-      if (monthsValidation.data) {
-        allMonthsData.push(monthsValidation.data);
-      }
-    });
-    const yearPricesValidation = yearPricesSchema.safeParse({
-      [2025]: allMonthsData,
-    });
-    if (!yearPricesValidation.success) {
-      console.log("yearPricesValidation", yearPricesValidation.error);
-      throw new Error("Failed to parse data");
     }
   };
 

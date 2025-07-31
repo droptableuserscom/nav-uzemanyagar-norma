@@ -34,18 +34,17 @@ export const monthNames = [
   "december",
 ] as const;
 
-export const monthsSchema = z.record(
-  z.string().refine((val) => monthNames.includes(val as any), {
+export const monthNameSchema = z
+  .string()
+  .refine((val) => monthNames.includes(val as any), {
     message: "Invalid month name",
-  }),
-  fuelPriceSchema
-);
+  });
 
-export const yearPricesSchema = z.record(
-  z.string().regex(/^\d{4}$/, "Year must be a 4-digit number"),
-  z.array(monthsSchema)
-);
+export const yearPricesSchema = z.object({
+  year: z.string().regex(/^\d{4}$/, "Year must be a 4-digit number"),
+  month: monthNameSchema,
+  prices: fuelPriceSchema,
+});
 
 export type YearPrices = z.infer<typeof yearPricesSchema>;
 export type FuelPrice = z.infer<typeof fuelPriceSchema>;
-export type Month = z.infer<typeof monthsSchema>;
