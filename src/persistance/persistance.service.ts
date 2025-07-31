@@ -27,6 +27,19 @@ namespace PersistanceService {
   const writeFile = async (path: string, data: any) => {
     fs.writeFileSync(path, JSON.stringify(data, null, 2));
   };
+  export const getPricesByMonth = async (year: string, month: string) => {
+    const data = await readFile();
+    const prices = lodash.get(data, `${year}.${month}`);
+    console.log("prices", prices);
+    return prices;
+  };
+
+  export const getPricesByYear = async (year: string) => {
+    const data = await readFile();
+    const prices = lodash.get(data, year);
+    console.log("prices", prices);
+    return prices;
+  };
 }
 
 export default PersistanceService;

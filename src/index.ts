@@ -1,11 +1,15 @@
 import { serve } from "@hono/node-server";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { homeRoute } from "./routes/home";
-import { webhookRoute } from "./routes/webhook";
+import { homeRoute } from "./routes/home.route";
+import { webhookRoute } from "./routes/webhook.route";
+import { fuelPriceRoute } from "./routes/fuel-price.route";
 
 const app = new OpenAPIHono();
 
-app.route("/", homeRoute).route("/webhook", webhookRoute);
+app
+  .route("/", homeRoute)
+  .route("/webhook", webhookRoute)
+  .route("/uzemanyagar", fuelPriceRoute);
 
 app.doc("/openapi.json", {
   openapi: "3.0.0",
