@@ -1,7 +1,12 @@
 import * as fs from "fs";
 import * as path from "path";
-import { YearPrices } from "../scraper/scraper.schema";
+import {
+  fuelPriceSchema,
+  yearFuelPricesSchema,
+} from "../scraper/scraper.schema";
 import lodash from "lodash";
+import { UpdateYearPrices } from "./persistance.schema";
+import { NotFoundError } from "./persistance.error";
 
 namespace PersistanceService {
   const readFile = async () => {
@@ -16,7 +21,7 @@ namespace PersistanceService {
     }
   };
 
-  export const addMonth = async (data: YearPrices): Promise<void> => {
+  export const addMonth = async (data: UpdateYearPrices): Promise<void> => {
     const existingData = await readFile();
     const newData = { [data.year]: { [data.month]: data.prices } };
     const mergedData = lodash.merge(existingData, newData);
@@ -27,18 +32,27 @@ namespace PersistanceService {
   const writeFile = async (path: string, data: any) => {
     fs.writeFileSync(path, JSON.stringify(data, null, 2));
   };
-  export const getPricesByMonth = async (year: string, month: string) => {
+  export const getPricesByMonth = async (year: number, month: string) => {
     const data = await readFile();
     const prices = lodash.get(data, `${year}.${month}`);
-    console.log("prices", prices);
-    return prices;
+    const { success, data: parsedData } = fuelPriceSchema.safeParse(prices);
+    if (!success) {
+      throw new NotFoundError(
+        `No prices found for this month: ${month} in ${year}`
+      );
+    }
+    return parsedData;
   };
 
-  export const getPricesByYear = async (year: string) => {
+  export const getPricesByYear = async (year: number) => {
     const data = await readFile();
     const prices = lodash.get(data, year);
-    console.log("prices", prices);
-    return prices;
+    const { success, data: parsedData } =
+      yearFuelPricesSchema.safeParse(prices);
+    if (!success) {
+      throw new NotFoundError("No prices found for this year");
+    }
+    return parsedData;
   };
 }
 

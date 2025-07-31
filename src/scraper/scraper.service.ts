@@ -2,6 +2,10 @@ import { getHtml } from "src/client/scraper.client";
 import * as cheerio from "cheerio";
 import { FuelPrice, fuelPriceSchema, monthNameSchema } from "./scraper.schema";
 import PersistanceService from "../persistance/persistance.service";
+import {
+  UpdateYearPrices,
+  updateYearPricesSchema,
+} from "src/persistance/persistance.schema";
 
 namespace ScraperService {
   export const runScraper = async () => {
@@ -31,11 +35,12 @@ namespace ScraperService {
         console.log("fuelValidation", fuelValidation.error);
         throw new Error("Failed to parse data");
       }
-      await PersistanceService.addMonth({
+      const updateYearPrices: UpdateYearPrices = updateYearPricesSchema.parse({
         year: "2025",
         month,
         prices: fuelValidation.data,
       });
+      await PersistanceService.addMonth(updateYearPrices);
     }
   };
 

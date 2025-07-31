@@ -40,11 +40,12 @@ export const monthNameSchema = z
     message: "Invalid month name",
   });
 
-export const yearPricesSchema = z.object({
-  year: z.string().regex(/^\d{4}$/, "Year must be a 4-digit number"),
-  month: monthNameSchema,
-  prices: fuelPriceSchema,
-});
+export const yearFuelPricesSchema = z.record(monthNameSchema, fuelPriceSchema);
 
-export type YearPrices = z.infer<typeof yearPricesSchema>;
+export const fuelPriceOrYearSchema = z.union([
+  fuelPriceSchema,
+  yearFuelPricesSchema,
+]);
+
 export type FuelPrice = z.infer<typeof fuelPriceSchema>;
+export type YearFuelPrices = z.infer<typeof yearFuelPricesSchema>;
