@@ -1,4 +1,13 @@
 {
+  "2023": {
+    "január": {
+      "olmozatlanMotorbenzin": 583,
+      "gazolaj": 614,
+      "keverek": 632,
+      "lpg": 317,
+      "cng": 820
+    }
+  },
   "2024": {
     "december": {
       "olmozatlanMotorbenzin": 608,
