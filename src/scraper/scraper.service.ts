@@ -4,6 +4,7 @@ import { FuelPrice, fuelPriceSchema, monthNameSchema } from "./scraper.schema";
 import PersistanceService from "../persistance/persistance.service";
 import { updateYearPricesSchema } from "src/persistance/persistance.schema";
 import { ScraperError } from "./scraper.error";
+import GitService from "src/git/git.service";
 
 namespace ScraperService {
   export const runScraper = async () => {
@@ -66,6 +67,7 @@ namespace ScraperService {
         }
       }
     }
+    await GitService.syncAndCommitData();
   };
 
   const getLinks = async () => {

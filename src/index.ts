@@ -4,6 +4,7 @@ import { homeRoute } from "./routes/home.route";
 import { webhookRoute } from "./routes/webhook.route";
 import { fuelPriceRoute } from "./routes/fuel-price.route";
 import { NotFoundError } from "./persistance/persistance.error";
+import { testRoute } from "./routes/test.route";
 
 const app = new OpenAPIHono();
 
@@ -11,6 +12,7 @@ app
   .route("/", homeRoute)
   .route("/webhook", webhookRoute)
   .route("/uzemanyagar", fuelPriceRoute)
+  .route("/test", testRoute)
   .onError((err, c) => {
     console.error(err);
     if (err instanceof NotFoundError) {

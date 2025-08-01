@@ -7,11 +7,12 @@ import {
 import lodash from "lodash";
 import { UpdateYearPrices } from "./persistance.schema";
 import { NotFoundError } from "./persistance.error";
+import { config } from "src/config";
 
 namespace PersistanceService {
   const readFile = async () => {
     try {
-      const dataPath = path.resolve("src/data.json");
+      const dataPath = path.resolve(config.data.jsonFilePath);
       const fileContent = fs.readFileSync(dataPath, "utf-8");
       if (!fileContent.trim()) return {};
       const data = JSON.parse(fileContent);
@@ -25,7 +26,7 @@ namespace PersistanceService {
     const existingData = await readFile();
     const newData = { [data.year]: { [data.month]: data.prices } };
     const mergedData = lodash.merge(existingData, newData);
-    const dataPath = path.resolve("src/data.json");
+    const dataPath = path.resolve(config.data.jsonFilePath);
     await writeFile(dataPath, mergedData);
   };
 
@@ -53,6 +54,12 @@ namespace PersistanceService {
       throw new NotFoundError("No prices found for this year");
     }
     return parsedData;
+  };
+
+  export const areJsonFilesEqual = async (data: any) => {
+    const dataPath = path.resolve(config.data.jsonFilePath);
+    const fileContent = fs.readFileSync(dataPath, "utf-8");
+    return lodash.isEqual(JSON.parse(fileContent), JSON.parse(data));
   };
 }
 
