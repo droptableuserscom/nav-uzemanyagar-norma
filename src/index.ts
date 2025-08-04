@@ -4,6 +4,7 @@ import { homeRoute } from "./routes/home.route";
 import { webhookRoute } from "./routes/webhook.route";
 import { fuelPriceRoute } from "./routes/fuel-price.route";
 import { NotFoundError } from "./persistance/persistance.error";
+import { ScraperError } from "./scraper/scraper.error";
 
 const app = new OpenAPIHono();
 
@@ -15,6 +16,9 @@ app
     console.error(err);
     if (err instanceof NotFoundError) {
       return c.json({ error: err.message }, 404);
+    }
+    if (err instanceof ScraperError) {
+      console.error("Scraper error", err.message);
     }
     return c.json({ error: "Internal server error" }, 500);
   });

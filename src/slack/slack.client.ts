@@ -13,6 +13,14 @@ namespace SlackClient {
     retryDelay: (retryCount) => retryCount * 1000,
   });
   export const sendMessage = async (message: string) => {
+    const isDev = config.env !== "production";
+
+    if (isDev) {
+      console.log("[DEV MODE] Slack message would be sent");
+      console.log("Message:", message);
+      return;
+    }
+
     try {
       await slackClient.post(config.slack.webhookUrl, {
         text: message,
@@ -27,7 +35,7 @@ namespace SlackClient {
         console.error("Request URL:", error.config?.baseURL);
         console.error("Request Method:", error.config?.method);
       }
-      return null;
+      return;
     }
   };
 }

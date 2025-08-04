@@ -61,6 +61,14 @@ namespace PersistanceService {
     const fileContent = fs.readFileSync(dataPath, "utf-8");
     return lodash.isEqual(JSON.parse(fileContent), JSON.parse(data));
   };
+
+  export const isFullYearData = async (year: number) => {
+    const data = await readFile();
+    const prices = lodash.get(data, year);
+    if (!prices) return false;
+    const isFullYear = Object.keys(prices).length === 12;
+    return isFullYear;
+  };
 }
 
 export default PersistanceService;

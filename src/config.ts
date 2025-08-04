@@ -5,6 +5,7 @@ import env from "env-var";
 dotenv.config({ path: path.join(process.cwd(), ".env") });
 
 export const config = {
+  env: env.get("NODE_ENV").required().asString(),
   git: {
     appId: env.get("GITHUB_APP_ID").required().asString(),
     privateKeyPath: env.get("GIT_PRIVATE_KEY_PATH").required().asString(),
@@ -15,6 +16,7 @@ export const config = {
   },
   data: {
     jsonFilePath: env.get("DATA_JSON_PATH").required().asString(),
+    scrapeFrom: env.get("DATA_SCRAPE_FROM").required().asInt(),
   },
   slack: {
     webhookUrl: env.get("SLACK_WEBHOOK_URL").required().asString(),

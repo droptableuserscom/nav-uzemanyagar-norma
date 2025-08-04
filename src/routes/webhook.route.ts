@@ -15,7 +15,10 @@ export const webhookRoute = new OpenAPIHono()
       },
     }),
     async (c) => {
-      await ScraperService.runScraper();
+      const errors = await ScraperService.runScraper();
+      if (errors.length > 0) {
+        await SlackClient.sendMessage(errors.join("\n"));
+      }
       return c.body(null, 200);
     }
   )

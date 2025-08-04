@@ -5,15 +5,39 @@ import PersistanceService from "../persistance/persistance.service";
 import { updateYearPricesSchema } from "src/persistance/persistance.schema";
 import { ScraperError } from "./scraper.error";
 import GitService from "src/git/git.service";
+import { config } from "src/config";
 
 namespace ScraperService {
   export const runScraper = async () => {
-    const linksMap = await getLinks();
-    const html2 = await ScraperClient.getHtml(linksMap.get("2025")!);
+    const linksMap = await crawlLinks();
+    let partialErrors: string[] = [];
+    for (const [key, value] of linksMap) {
+      if (parseInt(key) < config.data.scrapeFrom) {
+        continue;
+      }
+      const isFullYearData = await PersistanceService.isFullYearData(
+        parseInt(key)
+      );
+      if (!isFullYearData) {
+        console.log("scraping data for year", key);
+        const errors = await scrapeData(value, parseInt(key));
+        partialErrors.push(...errors);
+      } else {
+        console.log("year", key, "is already scraped");
+      }
+    }
+    await GitService.syncAndCommitData();
+    return partialErrors;
+  };
+
+  const scrapeData = async (link: string, year: number) => {
+    const html2 = await ScraperClient.getHtml(link);
     const page2 = cheerio.load(html2);
     const table = page2("tbody");
 
     const rows = table.find("tr").toArray();
+
+    let partialErrors: string[] = [];
 
     for (let i = 1; i < rows.length; i++) {
       try {
@@ -46,7 +70,7 @@ namespace ScraperService {
           );
         }
         const updateYearPrices = updateYearPricesSchema.safeParse({
-          year: 2025,
+          year,
           month: month.data,
           prices: fuelValidation.data,
         });
@@ -64,13 +88,14 @@ namespace ScraperService {
             throw error;
           }
           console.error(error.message);
+          partialErrors.push(error.message);
         }
       }
     }
-    await GitService.syncAndCommitData();
+    return partialErrors;
   };
 
-  const getLinks = async () => {
+  const crawlLinks = async () => {
     const html = await ScraperClient.getHtml("/ugyfeliranytu/uzemanyag");
     const page = cheerio.load(html);
     const sections = page(".content-list-elements");
