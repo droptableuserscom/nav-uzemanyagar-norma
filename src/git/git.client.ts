@@ -61,7 +61,6 @@ namespace GitClient {
         content: base64Content,
         branch: config.git.targetBranch,
       });
-      console.log("response", response);
     } catch (error: any) {
       if (error.status === 403) {
         throw new GitError(

@@ -23,7 +23,7 @@ export const webhookRoute = new OpenAPIHono()
     }
   )
   .onError(async (err, c) => {
-    console.log("err", err);
+    console.error("Error in webhook route", err);
     await SlackClient.sendMessage(err.message);
     return c.body(null, 500);
   });
