@@ -1,5 +1,5 @@
 export class GitError extends Error {
-  type: "push" | "pull" | "commit" | "checkout" | "general";
+  type: "push" | "pull" | "general";
   originalError?: Error;
 
   constructor(

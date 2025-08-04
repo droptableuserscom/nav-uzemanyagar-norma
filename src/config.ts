@@ -6,13 +6,12 @@ dotenv.config({ path: path.join(process.cwd(), ".env") });
 
 export const config = {
   git: {
-    username: env.get("GIT_USERNAME").required().asString(),
-    remoteUrl: env.get("GIT_REMOTE_URL").required().asString(),
-    localPath: env.get("GIT_LOCAL_PATH").required().asString(),
-    remoteName: env.get("GIT_REMOTE_NAME").required().asString(),
-    branch: env.get("GIT_BRANCH").required().asString(),
-    authorName: env.get("GIT_AUTHOR_SERVICE_NAME").required().asString(),
-    authorEmail: env.get("GIT_AUTHOR_SERVICE_EMAIL").required().asString(),
+    appId: env.get("GITHUB_APP_ID").required().asString(),
+    privateKeyPath: env.get("GIT_PRIVATE_KEY_PATH").required().asString(),
+    installationId: env.get("GIT_INSTALLATION_ID").required().asString(),
+    ownerOrg: env.get("GIT_OWNER_ORG").required().asString(),
+    targetRepo: env.get("GIT_TARGET_REPO").required().asString(),
+    targetBranch: env.get("GIT_TARGET_BRANCH").required().asString(),
   },
   data: {
     jsonFilePath: env.get("DATA_JSON_PATH").required().asString(),
