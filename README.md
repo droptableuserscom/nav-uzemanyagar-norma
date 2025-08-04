@@ -118,6 +118,46 @@ pnpm build
 pnpm start
 ```
 
+## 🐳 Docker
+
+This project includes Docker support for easy deployment and containerization.
+
+### Prerequisites for Docker
+
+- Docker installed on your system
+- Docker Compose (optional, for multi-container setups)
+
+### Docker Build
+
+Build the Docker image:
+
+```bash
+# Build the image
+docker build -t crawler .
+
+# Build with a specific tag
+docker build -t crawler:latest .
+```
+
+### Docker Run
+
+Run the container:
+
+```bash
+# Run the container
+docker run -p 3000:3000 crawler
+```
+
+### Docker Security Considerations
+
+⚠️ **Important Docker Security Notes:**
+
+- **Private Key Mounting**: Mount your GitHub private key as a read-only volume
+- **Environment Variables**: Use Docker secrets or environment files for sensitive data
+- **Non-root User**: The container runs as a non-root user (`hono`) for security
+- **Port Exposure**: Only expose the necessary port (3000)
+- **Image Scanning**: Regularly scan your Docker images for vulnerabilities
+
 ### Security Notes
 
 ⚠️ **Important Security Considerations:**

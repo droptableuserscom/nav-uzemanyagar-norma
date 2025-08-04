@@ -1,30 +1,31 @@
-{
-  "name": "nav-uzemanyagar-norma",
-  "type": "module",
-  "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js"
-  },
-  "dependencies": {
-    "@hono/node-server": "^1.17.1",
-    "@hono/zod-openapi": "^1.0.2",
-    "@hono/zod-validator": "^0.7.2",
-    "@octokit/auth-app": "^8.0.2",
-    "axios": "^1.11.0",
-    "axios-retry": "^4.5.0",
-    "cheerio": "^1.1.2",
-    "dotenv": "^17.2.1",
-    "env-var": "^7.5.0",
-    "hono": "^4.8.9",
-    "lodash": "^4.17.21",
-    "octokit": "^5.0.3",
-    "zod": "^4.0.10"
-  },
-  "devDependencies": {
-    "@types/lodash": "^4.17.20",
-    "@types/node": "^20.11.17",
-    "tsx": "^4.7.1",
-    "typescript": "^5.8.3"
+  {
+    "name": "nav-uzemanyagar-norma",
+    "type": "module",
+    "scripts": {
+      "dev": "tsx watch src/index.ts",
+      "build": "tsc && tsc-alias",
+      "start": "tsx src/index.ts"
+    },
+    "dependencies": {
+      "@hono/node-server": "^1.17.1",
+      "@hono/zod-openapi": "^1.0.2",
+      "@hono/zod-validator": "^0.7.2",
+      "@octokit/auth-app": "^8.0.2",
+      "axios": "^1.11.0",
+      "axios-retry": "^4.5.0",
+      "cheerio": "^1.1.2",
+      "dotenv": "^17.2.1",
+      "env-var": "^7.5.0",
+      "hono": "^4.8.9",
+      "lodash": "^4.17.21",
+      "octokit": "^5.0.3",
+      "zod": "^4.0.10"
+    },
+    "devDependencies": {
+      "@types/lodash": "^4.17.20",
+      "@types/node": "^20.11.17",
+      "tsc-alias": "^1.8.16",
+      "tsx": "^4.7.1",
+      "typescript": "^5.8.3"
+    }
   }
-}
