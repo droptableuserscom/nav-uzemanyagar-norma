@@ -24,7 +24,14 @@ namespace GitClient {
       });
 
       if (Array.isArray(data)) {
-        throw new Error("Expected single file, got multiple files");
+        throw new GitError(
+          `Expected single file, got multiple files: ${JSON.stringify(data)}`,
+          "pull"
+        );
+      }
+
+      if (data.type !== "file") {
+        throw new GitError(`Expected file, got ${data.type}`, "pull");
       }
 
       return Buffer.from(data.content, "base64").toString("utf-8");
