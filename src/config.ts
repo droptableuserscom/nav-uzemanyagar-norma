@@ -16,4 +16,7 @@ export const config = {
   data: {
     jsonFilePath: env.get("DATA_JSON_PATH").required().asString(),
   },
+  slack: {
+    webhookUrl: env.get("SLACK_WEBHOOK_URL").required().asString(),
+  },
 };
