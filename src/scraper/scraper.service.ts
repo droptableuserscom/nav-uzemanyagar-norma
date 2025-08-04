@@ -1,4 +1,4 @@
-import { getHtml } from "src/client/scraper.client";
+import ScraperClient from "src/scraper/scraper.client";
 import * as cheerio from "cheerio";
 import { FuelPrice, fuelPriceSchema, monthNameSchema } from "./scraper.schema";
 import PersistanceService from "../persistance/persistance.service";
@@ -9,7 +9,7 @@ import GitService from "src/git/git.service";
 namespace ScraperService {
   export const runScraper = async () => {
     const linksMap = await getLinks();
-    const html2 = await getHtml(linksMap.get("2025")!);
+    const html2 = await ScraperClient.getHtml(linksMap.get("2025")!);
     const page2 = cheerio.load(html2);
     const table = page2("tbody");
 
@@ -71,7 +71,7 @@ namespace ScraperService {
   };
 
   const getLinks = async () => {
-    const html = await getHtml("/ugyfeliranytu/uzemanyag");
+    const html = await ScraperClient.getHtml("/ugyfeliranytu/uzemanyag");
     const page = cheerio.load(html);
     const sections = page(".content-list-elements");
     const linksMap = new Map<string, string>();
