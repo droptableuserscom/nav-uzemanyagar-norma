@@ -3,6 +3,8 @@ import { Octokit } from "octokit";
 import fs from "fs";
 import { config } from "src/config";
 import { GitError } from "./git.error";
+import { getFileResponseDto } from "./git.schema";
+import { ZodError } from "zod";
 
 namespace GitClient {
   const octokit = new Octokit({
@@ -33,8 +35,10 @@ namespace GitClient {
       if (data.type !== "file") {
         throw new GitError(`Expected file, got ${data.type}`, "pull");
       }
-
-      return Buffer.from(data.content, "base64").toString("utf-8");
+      return getFileResponseDto.parse({
+        content: Buffer.from(data.content, "base64").toString("utf-8"),
+        sha: data.sha,
+      });
     } catch (error: any) {
       if (error.status === 403) {
         throw new GitError(
@@ -48,15 +52,29 @@ namespace GitClient {
           "pull",
           error
         );
+      } else if (error.status === 401) {
+        throw new GitError(
+          `GitHub App authentication error: ${error.message}.`,
+          "pull",
+          error
+        );
+      } else if (error instanceof ZodError) {
+        throw new GitError(
+          `Invalid file content: ${error.message}`,
+          "pull",
+          error
+        );
       }
       throw new GitError(`Failed to get file: ${error.message}`, "pull", error);
     }
   };
 
-  export const updateFile = async (fileContent: string) => {
+  export const updateFile = async (fileContent: string, sha: string) => {
     try {
-      const base64Content = Buffer.from(fileContent).toString("base64");
-      const response = await octokit.rest.repos.createOrUpdateFileContents({
+      const base64Content = Buffer.from(fileContent, "utf-8").toString(
+        "base64"
+      );
+      await octokit.rest.repos.createOrUpdateFileContents({
         owner: config.git.ownerOrg,
         repo: config.git.targetRepo,
         path: config.data.jsonFilePath,
@@ -65,6 +83,7 @@ namespace GitClient {
           name: "Dtu Crawler",
           email: "hello@droptableusers.com",
         },
+        sha,
         content: base64Content,
         branch: config.git.targetBranch,
       });

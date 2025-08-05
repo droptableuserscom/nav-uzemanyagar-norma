@@ -49,3 +49,8 @@ export const fuelPriceOrYearSchema = z.union([
 
 export type FuelPrice = z.infer<typeof fuelPriceSchema>;
 export type YearFuelPrices = z.infer<typeof yearFuelPricesSchema>;
+
+export const scraperServiceResponseSchema = z.object({
+  errors: z.array(z.string()),
+  message: z.string(),
+});

@@ -1,11 +1,17 @@
 import ScraperClient from "src/scraper/scraper.client";
 import * as cheerio from "cheerio";
-import { FuelPrice, fuelPriceSchema, monthNameSchema } from "./scraper.schema";
+import {
+  FuelPrice,
+  fuelPriceSchema,
+  monthNameSchema,
+  scraperServiceResponseSchema,
+} from "./scraper.schema";
 import PersistanceService from "../persistance/persistance.service";
 import { updateYearPricesSchema } from "src/persistance/persistance.schema";
 import { ScraperError } from "./scraper.error";
 import GitService from "src/git/git.service";
 import { config } from "src/config";
+import SlackClient from "src/slack/slack.client";
 
 namespace ScraperService {
   export const runScraper = async () => {
@@ -26,8 +32,18 @@ namespace ScraperService {
         console.log("year", key, "is already scraped");
       }
     }
-    await GitService.syncAndCommitData();
-    return partialErrors;
+    const isChanged = await GitService.syncAndCommitData();
+    if (isChanged) {
+      return scraperServiceResponseSchema.parse({
+        errors: partialErrors,
+        message: "Data has been changed, commit successful",
+      });
+    } else {
+      return scraperServiceResponseSchema.parse({
+        errors: partialErrors,
+        message: "No changes to commit, commit skipped",
+      });
+    }
   };
 
   const scrapeData = async (link: string, year: number) => {

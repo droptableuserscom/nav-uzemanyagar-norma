@@ -57,9 +57,16 @@ namespace PersistanceService {
   };
 
   export const areJsonFilesEqual = async (data: any) => {
-    const dataPath = path.resolve(config.data.jsonFilePath);
-    const fileContent = fs.readFileSync(dataPath, "utf-8");
-    return lodash.isEqual(JSON.parse(fileContent), JSON.parse(data));
+    const fileContent = await readFile();
+    const fileContentString = JSON.stringify(fileContent, null, 2);
+    const areEqual = lodash.isEqual(
+      JSON.parse(fileContentString),
+      JSON.parse(data)
+    );
+    return {
+      areEqual,
+      fileContent: fileContentString,
+    };
   };
 
   export const isFullYearData = async (year: number) => {
