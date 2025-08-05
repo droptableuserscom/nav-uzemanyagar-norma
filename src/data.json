@@ -1,4 +1,90 @@
 {
+  "2023": {
+    "december": {
+      "olmozatlanMotorbenzin": 615,
+      "gazolaj": 645,
+      "keverek": 664,
+      "lpg": 314,
+      "cng": 820
+    },
+    "november": {
+      "olmozatlanMotorbenzin": 650,
+      "gazolaj": 682,
+      "keverek": 699,
+      "lpg": 313,
+      "cng": 820
+    },
+    "október": {
+      "olmozatlanMotorbenzin": 647,
+      "gazolaj": 661,
+      "keverek": 697,
+      "lpg": 318,
+      "cng": 820
+    },
+    "szeptember": {
+      "olmozatlanMotorbenzin": 616,
+      "gazolaj": 602,
+      "keverek": 665,
+      "lpg": 318,
+      "cng": 820
+    },
+    "augusztus": {
+      "olmozatlanMotorbenzin": 577,
+      "gazolaj": 569,
+      "keverek": 627,
+      "lpg": 319,
+      "cng": 820
+    },
+    "július": {
+      "olmozatlanMotorbenzin": 580,
+      "gazolaj": 562,
+      "keverek": 629,
+      "lpg": 323,
+      "cng": 889
+    },
+    "június": {
+      "olmozatlanMotorbenzin": 583,
+      "gazolaj": 573,
+      "keverek": 632,
+      "lpg": 342,
+      "cng": 889
+    },
+    "május": {
+      "olmozatlanMotorbenzin": 616,
+      "gazolaj": 606,
+      "keverek": 666,
+      "lpg": 359,
+      "cng": 899
+    },
+    "április": {
+      "olmozatlanMotorbenzin": 608,
+      "gazolaj": 622,
+      "keverek": 657,
+      "lpg": 372,
+      "cng": 899
+    },
+    "március": {
+      "olmozatlanMotorbenzin": 629,
+      "gazolaj": 686,
+      "keverek": 679,
+      "lpg": 392,
+      "cng": 999
+    },
+    "február": {
+      "olmozatlanMotorbenzin": 645,
+      "gazolaj": 721,
+      "keverek": 695,
+      "lpg": 399,
+      "cng": 1481
+    },
+    "január": {
+      "olmozatlanMotorbenzin": 655,
+      "gazolaj": 713,
+      "keverek": 530,
+      "lpg": 407,
+      "cng": 1991
+    }
+  },
   "2024": {
     "december": {
       "olmozatlanMotorbenzin": 608,
@@ -127,6 +213,20 @@
       "keverek": 682,
       "lpg": 392,
       "cng": 825
+    },
+    "január": {
+      "olmozatlanMotorbenzin": 626,
+      "gazolaj": 638,
+      "keverek": 677,
+      "lpg": 379,
+      "cng": 800
+    },
+    "augusztus": {
+      "olmozatlanMotorbenzin": 596,
+      "gazolaj": 600,
+      "keverek": 648,
+      "lpg": 348,
+      "cng": 855
     }
   }
 }
