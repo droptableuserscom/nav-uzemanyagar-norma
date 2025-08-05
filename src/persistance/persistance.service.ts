@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import {
   fuelPriceSchema,
+  monthNames,
   yearFuelPricesSchema,
 } from "../scraper/scraper.schema";
 import lodash from "lodash";
@@ -72,9 +73,21 @@ namespace PersistanceService {
   export const isFullYearData = async (year: number) => {
     const data = await readFile();
     const prices = lodash.get(data, year);
-    if (!prices) return false;
+    if (!prices) throw new NotFoundError("No data found");
     const isFullYear = Object.keys(prices).length === 12;
     return isFullYear;
+  };
+
+  export const getLastScrapedMonth = async () => {
+    const data = await readFile();
+    const years = Object.keys(data);
+    if (years.length === 0) throw new NotFoundError("No data found");
+    const lastYear = parseInt(years[years.length - 1]);
+    const lastMonth = monthNames[Object.keys(data[lastYear]).length - 1];
+    const prices = lodash.get(data, `${lastYear}.${lastMonth}`);
+    const { success, data: parsedData } = fuelPriceSchema.safeParse(prices);
+    if (!success) throw new NotFoundError("No data found");
+    return parsedData;
   };
 }
 

@@ -38,6 +38,16 @@ export const fuelPriceRoute = new OpenAPIHono().openapi(
                     cng: 100,
                   },
                 },
+                {
+                  year: 2025,
+                  december: {
+                    olmozatlanMotorbenzin: 100,
+                    gazolaj: 100,
+                    keverek: 100,
+                    lpg: 100,
+                    cng: 100,
+                  },
+                },
               ],
             }),
           },

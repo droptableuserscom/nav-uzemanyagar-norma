@@ -5,12 +5,11 @@ namespace FuelPriceService {
   export const handleFuelPriceRequest = async (ev?: number, honap?: number) => {
     if (ev && honap) {
       const month = monthNames[honap - 1];
-      const prices = await PersistanceService.getPricesByMonth(ev, month);
-      return prices;
+      return await PersistanceService.getPricesByMonth(ev, month);
     } else if (ev) {
-      const prices = await PersistanceService.getPricesByYear(ev);
-      return prices;
+      return await PersistanceService.getPricesByYear(ev);
     }
+    return await PersistanceService.getLastScrapedMonth();
   };
 }
 
