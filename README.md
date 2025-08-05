@@ -197,21 +197,27 @@ GET /uzemanyagar
 - `ev` (optional): Year (e.g., 2023, 2024, 2025)
 - `honap` (optional): Month (1-12)
 
+**Behavior based on query parameters:**
+
+- **No query parameters**: Returns the last month's fuel price data
+- **Only `ev` parameter**: Returns the entire year's fuel price data for the specified year
+- **Both `ev` and `honap` parameters**: Returns the exact month's fuel price data for the specified year and month
+
 **Examples:**
 
-All current prices:
+Last month's prices (no query parameters):
 
 ```http
 GET /uzemanyagar
 ```
 
-Prices for a specific year:
+Entire year's prices (only year specified):
 
 ```http
 GET /uzemanyagar?ev=2025
 ```
 
-Prices for a specific month:
+Specific month's prices (year and month specified):
 
 ```http
 GET /uzemanyagar?ev=2025&honap=8
