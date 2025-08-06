@@ -11,7 +11,6 @@ import { updateYearPricesSchema } from "src/persistance/persistance.schema";
 import { ScraperError } from "./scraper.error";
 import GitService from "src/git/git.service";
 import { config } from "src/config";
-import SlackClient from "src/slack/slack.client";
 
 namespace ScraperService {
   export const runScraper = async () => {

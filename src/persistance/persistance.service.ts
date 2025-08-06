@@ -1,42 +1,33 @@
-import * as fs from "fs";
-import * as path from "path";
 import {
   fuelPriceSchema,
   monthNames,
+  YearFuelPrices,
   yearFuelPricesSchema,
 } from "../scraper/scraper.schema";
-import lodash from "lodash";
 import { UpdateYearPrices } from "./persistance.schema";
 import { NotFoundError } from "./persistance.error";
-import { config } from "src/config";
+import { cache } from "./persistance.cache";
 
 namespace PersistanceService {
-  const readFile = async () => {
-    try {
-      const dataPath = path.resolve(config.data.jsonFilePath);
-      const fileContent = fs.readFileSync(dataPath, "utf-8");
-      if (!fileContent.trim()) return {};
-      const data = JSON.parse(fileContent);
-      return data;
-    } catch {
-      return {};
-    }
+  export const getAllInBase64 = async () => {
+    const data = cache.getAll();
+    const jsonString = JSON.stringify(Object.fromEntries(data));
+    return Buffer.from(jsonString).toString("base64");
   };
-
   export const addMonth = async (data: UpdateYearPrices): Promise<void> => {
-    const existingData = await readFile();
-    const newData = { [data.year]: { [data.month]: data.prices } };
-    const mergedData = lodash.merge(existingData, newData);
-    const dataPath = path.resolve(config.data.jsonFilePath);
-    await writeFile(dataPath, mergedData);
-  };
+    const existingData = cache.get(data.year);
 
-  const writeFile = async (path: string, data: any) => {
-    fs.writeFileSync(path, JSON.stringify(data, null, 2));
+    cache.set(data.year, {
+      ...existingData,
+      [data.month]: data.prices,
+    });
   };
   export const getPricesByMonth = async (year: number, month: string) => {
-    const data = await readFile();
-    const prices = lodash.get(data, `${year}.${month}`);
+    const data = cache.get(year);
+    if (!data) {
+      throw new NotFoundError("No data found for this year");
+    }
+    const prices = data[month];
     const { success, data: parsedData } = fuelPriceSchema.safeParse(prices);
     if (!success) {
       throw new NotFoundError(
@@ -47,8 +38,7 @@ namespace PersistanceService {
   };
 
   export const getPricesByYear = async (year: number) => {
-    const data = await readFile();
-    const prices = lodash.get(data, year);
+    const prices = cache.get(year);
     const { success, data: parsedData } =
       yearFuelPricesSchema.safeParse(prices);
     if (!success) {
@@ -57,38 +47,48 @@ namespace PersistanceService {
     return parsedData;
   };
 
-  export const areJsonFilesEqual = async (data: any) => {
-    const fileContent = await readFile();
-    const fileContentString = JSON.stringify(fileContent, null, 2);
-    const areEqual = lodash.isEqual(
-      JSON.parse(fileContentString),
-      JSON.parse(data)
-    );
-    return {
-      areEqual,
-      fileContent: fileContentString,
-    };
+  export const filesAreEqual = async (data: Map<number, YearFuelPrices>) => {
+    const inMemoryData = cache.getAll();
+    if (inMemoryData.size !== data.size) return false;
+    for (const [year, prices] of inMemoryData) {
+      const filePrices = data.get(year);
+      if (!filePrices) return false;
+      if (Object.keys(prices).length !== Object.keys(filePrices).length)
+        return false;
+      for (const [month, price] of Object.entries(prices)) {
+        const filePrice = filePrices[month];
+        if (!filePrice) return false;
+        if (
+          price.olmozatlanMotorbenzin !== filePrice.olmozatlanMotorbenzin ||
+          price.gazolaj !== filePrice.gazolaj ||
+          price.keverek !== filePrice.keverek ||
+          price.lpg !== filePrice.lpg ||
+          price.cng !== filePrice.cng
+        )
+          return false;
+      }
+    }
+    return true;
   };
 
   export const isFullYearData = async (year: number) => {
-    const data = await readFile();
-    const prices = lodash.get(data, year);
-    if (!prices) throw new NotFoundError("No data found");
-    const isFullYear = Object.keys(prices).length === 12;
+    const data = cache.get(year);
+    if (!data) return false;
+    const isFullYear = Object.keys(data).length === 12;
     return isFullYear;
   };
 
   export const getLastScrapedMonth = async () => {
-    const data = await readFile();
-    const years = Object.keys(data);
+    const data = cache.getAll();
+    const years = Array.from(data.keys());
     if (years.length === 0) throw new NotFoundError("No data found");
-    const lastYear = parseInt(years[years.length - 1]);
-    const lastMonth = monthNames[Object.keys(data[lastYear]).length - 1];
-    const prices = lodash.get(data, `${lastYear}.${lastMonth}`);
+    const lastYear = years[years.length - 1];
+    const lastMonth =
+      monthNames[Object.keys(data.get(lastYear) || {}).length - 1];
+    const prices = data.get(lastYear)?.[lastMonth];
     const { success, data: parsedData } = fuelPriceSchema.safeParse(prices);
     if (!success) throw new NotFoundError("No data found");
     return parsedData;
   };
 }
-
 export default PersistanceService;

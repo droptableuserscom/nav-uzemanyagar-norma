@@ -5,6 +5,7 @@ import { config } from "src/config";
 import { GitError } from "./git.error";
 import { getFileResponseDto } from "./git.schema";
 import { ZodError } from "zod";
+import PersistanceService from "src/persistance/persistance.service";
 
 namespace GitClient {
   const octokit = new Octokit({
@@ -69,11 +70,9 @@ namespace GitClient {
     }
   };
 
-  export const updateFile = async (fileContent: string, sha: string) => {
+  export const updateFile = async (sha: string) => {
+    const base64Content = await PersistanceService.getAllInBase64();
     try {
-      const base64Content = Buffer.from(fileContent, "utf-8").toString(
-        "base64"
-      );
       await octokit.rest.repos.createOrUpdateFileContents({
         owner: config.git.ownerOrg,
         repo: config.git.targetRepo,

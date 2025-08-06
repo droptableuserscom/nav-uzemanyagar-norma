@@ -5,6 +5,7 @@ import { webhookRoute } from "./routes/webhook.route";
 import { fuelPriceRoute } from "./routes/fuel-price.route";
 import { NotFoundError } from "./persistance/persistance.error";
 import { ScraperError } from "./scraper/scraper.error";
+import { initCache } from "./persistance/persistance.cache";
 
 const app = new OpenAPIHono();
 
@@ -49,6 +50,7 @@ const server = serve(
     console.log(
       `OpenAPI documentation available at http://localhost:${port}/openapi.json`
     );
+    initCache();
   }
 );
 
