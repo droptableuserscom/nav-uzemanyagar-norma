@@ -2,6 +2,8 @@ name: BuszRent NAV Fuel Price Norm API DEV Development CI/CD pipeline
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main, BR-*]
 
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository }}
