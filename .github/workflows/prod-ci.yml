@@ -61,7 +61,7 @@ jobs:
           kubectl create secret generic nav-fuel-api-secrets \
             --from-literal=personal_access_token="${{ secrets.PAT_NAV_FUEL }}" \
             --from-literal=SLACK_WEBHOOK_URL="${{ secrets.SLACK_WEBHOOK_NAV_FUEL }}" \
-            --namespace=default \
+            --namespace=br-prod \
             --dry-run=client -o yaml | kubectl apply -f -
 
           # Create or update the private key secret
@@ -70,7 +70,7 @@ jobs:
 
           kubectl create secret generic nav-fuel-api-private-key \
             --from-file=private-key.pem=/tmp/private-key.pem \
-            --namespace=default \
+            --namespace=br-prod \
             --dry-run=client -o yaml | kubectl apply -f -
 
           # Clean up temp file
