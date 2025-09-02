@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
+      - "*"
       - "!main"
 
 env:
@@ -53,6 +54,12 @@ jobs:
       - name: Set TAG from dockerize job
         run: |
           echo "TAG=${{ needs.dockerize.outputs.TAG }}" >> $GITHUB_ENV
+
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
 
       - name: Create/Update Kubernetes secrets
         run: |
