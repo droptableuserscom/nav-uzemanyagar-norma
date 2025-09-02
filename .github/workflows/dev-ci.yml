@@ -28,13 +28,13 @@ jobs:
         run: |
           # Create or update the API secrets
           kubectl create secret generic nav-fuel-api-secrets \
-            --from-literal=personal_access_token="${{ secrets.GITHUB_PATH_NAV_FUEL }}" \
+            --from-literal=personal_access_token="${{ secrets.PAT_NAV_FUEL }}" \
             --from-literal=SLACK_WEBHOOK_URL="${{ secrets.SLACK_WEBHOOK_NAV_FUEL }}" \
             --namespace=default \
             --dry-run=client -o yaml | kubectl apply -f -
 
           # Create or update the private key secret
-          echo "${{ secrets.GITHUB_PRIVATE_KEY_NAV_FUEL }}" > /tmp/private-key.pem
+          echo "${{ secrets.PRIVATE_KEY_NAV_FUEL }}" > /tmp/private-key.pem
           chmod 400 /tmp/private-key.pem
 
           kubectl create secret generic nav-fuel-api-private-key \
