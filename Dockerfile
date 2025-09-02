@@ -19,7 +19,6 @@ COPY --from=builder --chown=hono:nodejs /app/node_modules /app/node_modules
 COPY --from=builder --chown=hono:nodejs /app/src /app/src
 COPY --from=builder --chown=hono:nodejs /app/package.json /app/package.json
 COPY --from=builder --chown=hono:nodejs /app/tsconfig.json /app/tsconfig.json
-COPY --from=builder --chown=hono:nodejs /app/dtu-crawler.pem /app/dtu-crawler.pem
 
 USER hono
 EXPOSE 3000
