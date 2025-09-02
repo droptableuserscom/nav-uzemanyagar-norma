@@ -11,6 +11,7 @@ env:
   IMAGE_NAME: ghcr.io/${{ github.repository }}
   SHORT_COMMIT_HASH: $(git rev-parse --short HEAD)
   TIMESTAMP: $(git show --no-patch --no-notes --date=format:%Y%m%d%H%M --pretty="%cd" $(git rev-parse --short HEAD))
+  NAMESPACE: br-dev
 
 jobs:
   dockerize:
@@ -41,6 +42,60 @@ jobs:
       - name: Push the Docker image
         run: docker push ${{ env.IMAGE_NAME }}:${{ env.TAG }}
 
+  setup-kubernetes:
+    name: Setup Kubernetes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      - name: Create/Update Kubernetes secrets
+        run: |
+          # Create or update the API secrets
+          kubectl create secret generic nav-fuel-api-secrets \
+            --from-literal=personal_access_token="${{ secrets.PAT_NAV_FUEL }}" \
+            --from-literal=SLACK_WEBHOOK_URL="${{ secrets.SLACK_WEBHOOK_NAV_FUEL }}" \
+            --namespace=${{ env.NAMESPACE }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          # Create or update the private key secret
+          echo "${{ secrets.PRIVATE_KEY_NAV_FUEL }}" > /tmp/private-key.pem
+          chmod 400 /tmp/private-key.pem
+
+          kubectl create secret generic nav-fuel-api-private-key \
+            --from-file=private-key.pem=/tmp/private-key.pem \
+            --namespace=${{ env.NAMESPACE }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          # Clean up temp file
+          rm -f /tmp/private-key.pem
+      - name: Verify Kubernetes secrets
+        run: |
+          # Check if nav-fuel-api-secrets exists
+          if kubectl get secret nav-fuel-api-secrets --namespace=${{ env.NAMESPACE }} >/dev/null 2>&1; then
+            echo "✅ nav-fuel-api-secrets exists"
+            kubectl describe secret nav-fuel-api-secrets --namespace=${{ env.NAMESPACE }}
+          else
+            echo "❌ nav-fuel-api-secrets NOT found"
+            exit 1
+          fi
+
+          # Check if nav-fuel-api-private-key exists  
+          if kubectl get secret nav-fuel-api-private-key --namespace=${{ env.NAMESPACE }} >/dev/null 2>&1; then
+            echo "✅ nav-fuel-api-private-key exists"
+            kubectl describe secret nav-fuel-api-private-key --namespace=${{ env.NAMESPACE }}
+          else
+            echo "❌ nav-fuel-api-private-key NOT found"
+            exit 1
+          fi
+
+          # List all secrets for verification
+          echo "All secrets in ${{ env.NAMESPACE }} namespace:"
+          kubectl get secrets --namespace=${{ env.NAMESPACE }}
+
   update-chart:
     name: Update Helm Chart (DEV)
     runs-on: ubuntu-latest
@@ -54,33 +109,6 @@ jobs:
       - name: Set TAG from dockerize job
         run: |
           echo "TAG=${{ needs.dockerize.outputs.TAG }}" >> $GITHUB_ENV
-
-      - name: Configure kubectl
-        uses: azure/k8s-set-context@v3
-        with:
-          method: kubeconfig
-          kubeconfig: ${{ secrets.KUBE_CONFIG }}
-
-      - name: Create/Update Kubernetes secrets
-        run: |
-          # Create or update the API secrets
-          kubectl create secret generic nav-fuel-api-secrets \
-            --from-literal=personal_access_token="${{ secrets.PAT_NAV_FUEL }}" \
-            --from-literal=SLACK_WEBHOOK_URL="${{ secrets.SLACK_WEBHOOK_NAV_FUEL }}" \
-            --namespace=br-dev \
-            --dry-run=client -o yaml | kubectl apply -f -
-
-          # Create or update the private key secret
-          echo "${{ secrets.PRIVATE_KEY_NAV_FUEL }}" > /tmp/private-key.pem
-          chmod 400 /tmp/private-key.pem
-
-          kubectl create secret generic nav-fuel-api-private-key \
-            --from-file=private-key.pem=/tmp/private-key.pem \
-            --namespace=br-dev \
-            --dry-run=client -o yaml | kubectl apply -f -
-
-          # Clean up temp file
-          rm -f /tmp/private-key.pem
 
       - name: Clone Helm chart repo
         run: |
@@ -98,5 +126,5 @@ jobs:
         run: |
           cd buszrent-helm-charts
           git add charts/nav-fuel-price-norm-api/values/dev.yaml
-          git commit -m "chore: update NAV FUEL PRICE NORM DEV image tag to ${TAG}" || echo "No changes to commit"
+          git commit -m "chore: update NAV FUEL PRICE NORM ${{ env.NAMESPACE }} image tag to ${TAG}" || echo "No changes to commit"
           git push
