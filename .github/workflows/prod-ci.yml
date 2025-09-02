@@ -1,0 +1,65 @@
+name: BuszRent NAV Fuel Price Norm API DEV Development CI/CD pipeline
+
+on:
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository }}
+
+jobs:
+  update-chart:
+    name: Update Helm Chart (DEV)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout app repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute TAG
+        run: |
+          SHORT_COMMIT_HASH=$(git rev-parse --short HEAD)
+          TIMESTAMP=$(git show --no-patch --no-notes --date=format:%Y%m%d%H%M --pretty="%cd")
+          echo "SHORT_COMMIT_HASH=${SHORT_COMMIT_HASH}" >> $GITHUB_ENV
+          echo "TIMESTAMP=${TIMESTAMP}" >> $GITHUB_ENV
+          echo "TAG=${TIMESTAMP}-${SHORT_COMMIT_HASH}" >> $GITHUB_ENV
+
+      - name: Create/Update Kubernetes secrets
+        run: |
+          # Create or update the API secrets
+          kubectl create secret generic nav-fuel-api-secrets \
+            --from-literal=personal_access_token="${{ secrets.GITHUB_PATH_NAV_FUEL }}" \
+            --from-literal=SLACK_WEBHOOK_URL="${{ secrets.SLACK_WEBHOOK_NAV_FUEL }}" \
+            --namespace=default \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          # Create or update the private key secret
+          echo "${{ secrets.GITHUB_PRIVATE_KEY_NAV_FUEL }}" > /tmp/private-key.pem
+          chmod 400 /tmp/private-key.pem
+
+          kubectl create secret generic nav-fuel-api-private-key \
+            --from-file=private-key.pem=/tmp/private-key.pem \
+            --namespace=default \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          # Clean up temp file
+          rm -f /tmp/private-key.pem
+
+      - name: Clone Helm chart repo
+        run: |
+          git clone https://x-access-token:${{ secrets.HELM_REPO_TOKEN }}@github.com/droptableuserscom/buszrent-helm-charts.git
+          cd buszrent-helm-charts
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+      - name: Update image tag in dev values.yaml
+        uses: mikefarah/yq@v4.44.3
+        with:
+          cmd: yq eval '.image.tag = env(TAG)' -i buszrent-helm-charts/charts/nav-fuel-price-norm-api/values/dev.yaml
+
+      - name: Commit and push changes
+        run: |
+          cd buszrent-helm-charts
+          git add charts/nav-fuel-price-norm-api/values/dev.yaml
+          git commit -m "chore: update NAV FUEL PRICE NORM DEV image tag to ${TAG}" || echo "No changes to commit"
+          git push
