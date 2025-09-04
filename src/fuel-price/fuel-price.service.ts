@@ -8,6 +8,12 @@ namespace FuelPriceService {
       return await PersistanceService.getPricesByMonth(ev, month);
     } else if (ev) {
       return await PersistanceService.getPricesByYear(ev);
+    } else if (honap) {
+      const month = monthNames[honap - 1];
+      return await PersistanceService.getPricesByMonth(
+        new Date().getFullYear(),
+        month
+      );
     }
     return await PersistanceService.getLastScrapedMonth();
   };
