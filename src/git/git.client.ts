@@ -41,32 +41,38 @@ namespace GitClient {
         sha: data.sha,
       });
     } catch (error: any) {
-      if (error.status === 403) {
-        throw new GitError(
-          `GitHub App permissions error: ${error.message}.`,
-          "pull",
-          error
-        );
-      } else if (error.status === 404) {
-        throw new GitError(
-          `File not found: ${config.data.jsonFilePath} in ${config.git.ownerOrg}/${config.git.targetRepo} on branch ${config.git.targetBranch}`,
-          "pull",
-          error
-        );
-      } else if (error.status === 401) {
-        throw new GitError(
-          `GitHub App authentication error: ${error.message}.`,
-          "pull",
-          error
-        );
-      } else if (error instanceof ZodError) {
-        throw new GitError(
-          `Invalid file content: ${error.message}`,
-          "pull",
-          error
-        );
+      switch (true) {
+        case error?.status === 403:
+          throw new GitError(
+            `GitHub App permissions error: ${error.message}.`,
+            "pull",
+            error
+          );
+        case error?.status === 404:
+          throw new GitError(
+            `File not found: ${config.data.jsonFilePath} in ${config.git.ownerOrg}/${config.git.targetRepo} on branch ${config.git.targetBranch}`,
+            "pull",
+            error
+          );
+        case error?.status === 401:
+          throw new GitError(
+            `GitHub App authentication error: ${error.message}.`,
+            "pull",
+            error
+          );
+        case error instanceof ZodError:
+          throw new GitError(
+            `Invalid file content: ${error.message}`,
+            "pull",
+            error
+          );
+        default:
+          throw new GitError(
+            `Failed to get file: ${error?.message ?? String(error)}`,
+            "pull",
+            error
+          );
       }
-      throw new GitError(`Failed to get file: ${error.message}`, "pull", error);
     }
   };
 
