@@ -98,12 +98,11 @@ namespace ScraperService {
 
         await PersistanceService.addMonth(updateYearPrices.data);
       } catch (error) {
-        if (error instanceof ScraperError) {
-          if (error.type === "breaking") {
-            throw error;
-          }
+        if (error instanceof ScraperError && error.type === "partial") {
           console.error(error.message);
           partialErrors.push(error.message);
+        } else {
+          throw error;
         }
       }
     }
