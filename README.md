@@ -211,11 +211,16 @@ Last month's prices (no query parameters):
 GET /uzemanyagar
 ```
 
+Actual year's specific month prices (only month specified):
+
+````http
+GET /uzemanyagar?honap=1
+
 Entire year's prices (only year specified):
 
 ```http
 GET /uzemanyagar?ev=2025
-```
+````
 
 Specific month's prices (year and month specified):
 
