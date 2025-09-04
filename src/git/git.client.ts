@@ -83,10 +83,10 @@ namespace GitClient {
         owner: config.git.ownerOrg,
         repo: config.git.targetRepo,
         path: config.data.jsonFilePath,
-        message: "chore: update data.json by crawler",
+        message: config.git.commitMessage,
         committer: {
-          name: "Dtu Crawler",
-          email: "hello@droptableusers.com",
+          name: config.git.commiter.name,
+          email: config.git.commiter.email,
         },
         sha,
         content: base64Content,

@@ -13,6 +13,11 @@ export const config = {
     ownerOrg: env.get("GIT_OWNER_ORG").required().asString(),
     targetRepo: env.get("GIT_TARGET_REPO").required().asString(),
     targetBranch: env.get("GIT_TARGET_BRANCH").required().asString(),
+    commiter: {
+      name: env.get("GIT_COMMITTER_NAME").required().asString(),
+      email: env.get("GIT_COMMITTER_EMAIL").required().asString(),
+    },
+    commitMessage: env.get("GIT_COMMIT_MESSAGE").required().asString(),
   },
   data: {
     jsonFilePath: env.get("DATA_JSON_PATH").required().asString(),
