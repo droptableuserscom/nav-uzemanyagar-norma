@@ -114,7 +114,7 @@ jobs:
 
       - name: Clone Helm chart repo
         run: |
-          git clone https://x-access-token:${{ secrets.HELM_REPO_TOKEN }}@github.com/droptableuserscom/buszrent-helm-charts.git
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/droptableuserscom/buszrent-helm-charts.git
           cd buszrent-helm-charts
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
