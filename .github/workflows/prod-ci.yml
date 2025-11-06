@@ -1,0 +1,96 @@
+name: BuszRent NAV Fuel Price Norm API PROD Production CI/CD pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "main"
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository }}
+  SHORT_COMMIT_HASH: $(git rev-parse --short HEAD)
+  TIMESTAMP: $(git show --no-patch --no-notes --date=format:%Y%m%d%H%M --pretty="%cd" $(git rev-parse --short HEAD))
+  NAMESPACE: br-prod
+
+jobs:
+  dockerize:
+    name: Dockerize application
+    runs-on: ubuntu-latest
+    outputs:
+      TAG: ${{ env.TAG }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute TAG
+        run: |
+          SHORT_COMMIT_HASH=$(git rev-parse --short HEAD)
+          TIMESTAMP=$(git show --no-patch --no-notes --date=format:%Y%m%d%H%M --pretty="%cd")
+          echo "SHORT_COMMIT_HASH=${SHORT_COMMIT_HASH}" >> $GITHUB_ENV
+          echo "TIMESTAMP=${TIMESTAMP}" >> $GITHUB_ENV
+          echo "TAG=${TIMESTAMP}-${SHORT_COMMIT_HASH}" >> $GITHUB_ENV
+
+      - name: Docker login to ghcr.io
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+
+      - name: Build the Docker image
+        run: docker build -f Dockerfile . --tag ${{ env.IMAGE_NAME }}:${{ env.TAG }}
+
+      - name: Push the Docker image
+        run: docker push ${{ env.IMAGE_NAME }}:${{ env.TAG }}
+
+  update-chart:
+    name: Update Helm Chart (PROD)
+    runs-on: ubuntu-latest
+    needs: dockerize
+    steps:
+      - name: Checkout app repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set TAG from dockerize job
+        run: |
+          echo "TAG=${{ needs.dockerize.outputs.TAG }}" >> $GITHUB_ENV
+
+      - name: Create/Update Kubernetes secrets
+        run: |
+          # Create or update the API secrets
+          kubectl create secret generic nav-fuel-api-secrets \
+            --from-literal=personal_access_token="${{ secrets.PAT_NAV_FUEL }}" \
+            --from-literal=SLACK_WEBHOOK_URL="${{ secrets.SLACK_WEBHOOK_NAV_FUEL }}" \
+            --namespace=${{ env.NAMESPACE }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          # Create or update the private key secret
+          echo "${{ secrets.PRIVATE_KEY_NAV_FUEL }}" > /tmp/private-key.pem
+          chmod 400 /tmp/private-key.pem
+
+          kubectl create secret generic nav-fuel-api-private-key \
+            --from-file=private-key.pem=/tmp/private-key.pem \
+            --namespace=${{ env.NAMESPACE }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          # Clean up temp file
+          rm -f /tmp/private-key.pem
+
+      - name: Clone Helm chart repo
+        run: |
+          git clone https://x-access-token:${{ secrets.HELM_REPO_TOKEN }}@github.com/droptableuserscom/buszrent-helm-charts.git
+          cd buszrent-helm-charts
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+      - name: Update image tag in prod values.yaml
+        uses: mikefarah/yq@v4.44.3
+        with:
+          cmd: yq eval '.image.tag = env(TAG)' -i buszrent-helm-charts/charts/nav-fuel-price-norm-api/values/prod.yaml
+
+      - name: Commit and push changes
+        run: |
+          cd buszrent-helm-charts
+          git add charts/nav-fuel-price-norm-api/values/prod.yaml
+          git commit -m "chore: update NAV FUEL PRICE NORM ${{ env.NAMESPACE }} image tag to ${TAG}" || echo "No changes to commit"
+          git push
