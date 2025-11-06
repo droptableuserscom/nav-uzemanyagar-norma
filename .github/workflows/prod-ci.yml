@@ -118,11 +118,11 @@ jobs:
       - name: Update image tag in prod values.yaml
         uses: mikefarah/yq@v4.44.3
         with:
-          cmd: yq eval '.image.tag = env(TAG)' -i buszrent-helm-charts/charts/nav-fuel-price-norm-api/values/prod.yaml
+          cmd: yq eval '.image.tag = env(TAG)' -i buszrent-helm-charts/charts/nav-fuel-price-norm-api/values/values-dev.yaml
 
       - name: Commit and push changes
         run: |
           cd buszrent-helm-charts
-          git add charts/nav-fuel-price-norm-api/values/prod.yaml
+          git add charts/nav-fuel-price-norm-api/values/values-dev.yaml
           git commit -m "chore: update NAV FUEL PRICE NORM ${{ env.NAMESPACE }} image tag to ${TAG}" || echo "No changes to commit"
           git push
