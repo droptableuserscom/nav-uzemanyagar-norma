@@ -55,8 +55,15 @@ jobs:
         run: |
           echo "TAG=${{ needs.dockerize.outputs.TAG }}" >> $GITHUB_ENV
 
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > /tmp/kubeconfig
+          export KUBECONFIG=/tmp/kubeconfig
+          kubectl config current-context
+
       - name: Create/Update Kubernetes secrets
         run: |
+          export KUBECONFIG=/tmp/kubeconfig
           # Create or update the API secrets
           kubectl create secret generic nav-fuel-api-secrets \
             --from-literal=personal_access_token="${{ secrets.PAT_NAV_FUEL }}" \
@@ -75,6 +82,31 @@ jobs:
 
           # Clean up temp file
           rm -f /tmp/private-key.pem
+
+      - name: Verify Kubernetes secrets
+        run: |
+          export KUBECONFIG=/tmp/kubeconfig
+          # Check if nav-fuel-api-secrets exists
+          if kubectl get secret nav-fuel-api-secrets --namespace=${{ env.NAMESPACE }} >/dev/null 2>&1; then
+            echo "✅ nav-fuel-api-secrets exists"
+            kubectl describe secret nav-fuel-api-secrets --namespace=${{ env.NAMESPACE }}
+          else
+            echo "❌ nav-fuel-api-secrets NOT found"
+            exit 1
+          fi
+
+          # Check if nav-fuel-api-private-key exists  
+          if kubectl get secret nav-fuel-api-private-key --namespace=${{ env.NAMESPACE }} >/dev/null 2>&1; then
+            echo "✅ nav-fuel-api-private-key exists"
+            kubectl describe secret nav-fuel-api-private-key --namespace=${{ env.NAMESPACE }}
+          else
+            echo "❌ nav-fuel-api-private-key NOT found"
+            exit 1
+          fi
+
+          # List all secrets for verification
+          echo "All secrets in ${{ env.NAMESPACE }} namespace:"
+          kubectl get secrets --namespace=${{ env.NAMESPACE }}
 
       - name: Clone Helm chart repo
         run: |
