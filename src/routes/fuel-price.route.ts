@@ -17,35 +17,44 @@ export const fuelPriceRoute = new OpenAPIHono().openapi(
     },
     responses: {
       200: {
-        description: "Get actual fuel prices",
+        description:
+          "NAV fuel prices: one month or full year; optionally includes special (protected) prices.",
         content: {
           "application/json": {
             schema: fuelPriceOrYearSchema.openapi({
               examples: [
                 {
-                  olmozatlanMotorbenzin: 100,
-                  gazolaj: 100,
-                  keverek: 100,
-                  lpg: 100,
-                  cng: 100,
+                  olmozatlanMotorbenzin: 704,
+                  olmozatlanMotorbenzinSpecial: 595,
+                  gazolaj: 802,
+                  gazolajSpecial: 615,
+                  keverek: 756,
+                  lpg: 356,
+                  cng: 860,
+                },
+                {
+                  olmozatlanMotorbenzin: 580,
+                  gazolaj: 587,
+                  keverek: 632,
+                  lpg: 328,
+                  cng: 800,
                 },
                 {
                   január: {
-                    olmozatlanMotorbenzin: 100,
-                    gazolaj: 100,
-                    keverek: 100,
-                    lpg: 100,
-                    cng: 100,
+                    olmozatlanMotorbenzin: 572,
+                    gazolaj: 586,
+                    keverek: 624,
+                    lpg: 328,
+                    cng: 810,
                   },
-                },
-                {
-                  year: 2025,
-                  december: {
-                    olmozatlanMotorbenzin: 100,
-                    gazolaj: 100,
-                    keverek: 100,
-                    lpg: 100,
-                    cng: 100,
+                  május: {
+                    olmozatlanMotorbenzin: 704,
+                    olmozatlanMotorbenzinSpecial: 595,
+                    gazolaj: 802,
+                    gazolajSpecial: 615,
+                    keverek: 756,
+                    lpg: 356,
+                    cng: 860,
                   },
                 },
               ],
