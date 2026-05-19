@@ -8,12 +8,14 @@ export const htmlSchema = z.string().refine(
       /<\s*[a-zA-Z][^>]*>/i.test(trimmed)
     );
   },
-  { message: "Response does not contain valid HTML" }
+  { message: "Response does not contain valid HTML" },
 );
 
 export const fuelPriceSchema = z.object({
   olmozatlanMotorbenzin: z.number().positive(),
+  olmozatlanMotorbenzinSpecial: z.number().positive().optional(),
   gazolaj: z.number().positive(),
+  gazolajSpecial: z.number().positive().optional(),
   keverek: z.number().positive(),
   lpg: z.number().positive(),
   cng: z.number().positive(),

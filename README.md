@@ -203,6 +203,10 @@ GET /uzemanyagar
 - **Only `ev` parameter**: Returns the entire year's fuel price data for the specified year
 - **Both `ev` and `honap` parameters**: Returns the exact month's fuel price data for the specified year and month
 
+**Optional behaviour:**
+
+- Responses may optionally include **`olmozatlanMotorbenzinSpecial`** and **`gazolajSpecial`** when NAV publishes protected-price columns.
+
 **Examples:**
 
 Last month's prices (no query parameters):
