@@ -3,7 +3,7 @@ FROM node:22-alpine AS base
 FROM base AS builder
 RUN apk add --no-cache gcompat
 WORKDIR /app
-RUN npm install -g pnpm
+RUN npm install -g pnpm@11.1.2
 COPY . .
 RUN pnpm install --frozen-lockfile
 RUN pnpm run build
